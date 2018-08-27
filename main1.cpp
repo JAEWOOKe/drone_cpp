@@ -231,15 +231,17 @@ Point trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraF
 					minEnclosingCircle(contours_poly[i], centers[i], radius[i]);
 					if (float(contourArea(contours[i])) >= float(0.8) * radius[i] * radius[i] * float(3.14)) {
 						balls.push_back(contours[i]);
+						/*
 						std::cout << "contour ³ĞÀÌ" << std::endl;
 						std::cout << contourArea(contours[i]) << std::endl;
 						std::cout << "circle ³ĞÀÌ" << std::endl;
 						std::cout << radius[i] * radius[i] * 3.14 << std::endl;
 						std::cout << "¹İÁö¸§" << std::endl;
 						std::cout << radius[i] << std::endl;
+						*/
 					}
 					else {
-						std::cout << "¿øÀÌ ¾Æ´Õ´Ï´Ù" << std::endl;
+						//std::cout << "¿øÀÌ ¾Æ´Õ´Ï´Ù" << std::endl;
 						balls.push_back(trash[i]);
 					}
 				}
@@ -414,8 +416,9 @@ int main(int argc, char* argv[])
 			morphOps(threshold);
 			centerG = trackFilteredObject(green, threshold, HSV, cameraFeed);
 
-			std::cout << "Blue" << "          " << "Green" << "          " << "Red" << std::endl;
-			std::cout << centerB << "     " << centerG << "     " << centerR << std::endl;
+			//std::cout << "Blue" << "          " << "Green" << "          " << "Red" << std::endl;
+			//std::cout << centerB << "     " << centerG << "     " << centerR << std::endl;
+			std::cout << "R-G    " << centerR - centerG << std::endl;
 		}
 		//show frames
 		//imshow(windowName2,threshold);
