@@ -53,6 +53,10 @@ int ratio = 3;
 int kernel_size = 3;
 const char* window_name = "Edge Map";
 
+Point cameraCenter;
+
+int roi_width, roi_height;
+
 void on_trackbar(int, void*)
 {//This function gets called whenever a
  // trackbar position is changed
@@ -230,6 +234,9 @@ Point trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraF
 					approxPolyDP(contours[i], contours_poly[i], 3, true);
 					minEnclosingCircle(contours_poly[i], centers[i], radius[i]);
 					if (float(contourArea(contours[i])) >= float(0.8) * radius[i] * radius[i] * float(3.14)) {
+						// centers[i]가 중심점을 어떻게 잡고 있는지 체크해야함.
+						std::cout << "x좌표: " << centers[i].x << "          y좌표: " << centers[i].y << std::endl;
+						
 						balls.push_back(contours[i]);
 						/*
 						std::cout << "contour 넓이" << std::endl;
@@ -329,8 +336,26 @@ Point trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraF
 	return result;
 }
 
+String roiDetector(Point center) {
+	if ((center.x - (cameraCenter.x - roi_width / 2)) < 0) {
+		return "왼쪽으로 가세요.";
+	}
+	else if ((center.x - (cameraCenter.x + roi_width / 2)) > 0) {
+		return "오른쪽으로 가세요.";
+	}
+	else {
+		return "정상 범주안에 있습니다.";
+	}
+	
+}
 int main(int argc, char* argv[])
 {
+	cameraCenter.x = 320;
+	cameraCenter.y = 240;
+	
+	roi_width = 120;
+	roi_height = 120;
+
 	//if we would like to calibrate our filter values, set to true.
 	bool calibrationMode = false;
 
@@ -346,7 +371,7 @@ int main(int argc, char* argv[])
 	//video capture object to acquire webcam feed
 	VideoCapture capture;
 	//open capture object at location zero (default location for webcam)
-	capture.open(1);
+	capture.open(0);
 	//set height and width of capture frame
 	capture.set(CV_CAP_PROP_FRAME_WIDTH, FRAME_WIDTH);
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT);
@@ -402,6 +427,8 @@ int main(int argc, char* argv[])
 			morphOps(threshold);
 
 			centerB = trackFilteredObject(blue, threshold, HSV, cameraFeed);
+			// std::cout << centerB << std::endl;
+			// std::cout << roiDetector(centerB) << std::endl;
 
 			// std::cout << test1 << std::endl;
 
@@ -410,15 +437,20 @@ int main(int argc, char* argv[])
 			inRange(HSV, red.getHSVmin(), red.getHSVmax(), threshold);
 			morphOps(threshold);
 			centerR = trackFilteredObject(red, threshold, HSV, cameraFeed);
+
+			// std::cout << centerR << std::endl;
+			// std::cout << roiDetector(centerR) << std::endl;
 			//then greens
 			cvtColor(cameraFeed, HSV, COLOR_BGR2HSV);
 			inRange(HSV, green.getHSVmin(), green.getHSVmax(), threshold);
 			morphOps(threshold);
 			centerG = trackFilteredObject(green, threshold, HSV, cameraFeed);
 
+			std::cout << roiDetector((centerB + centerG)/2) << std::endl;
+
 			//std::cout << "Blue" << "          " << "Green" << "          " << "Red" << std::endl;
 			//std::cout << centerB << "     " << centerG << "     " << centerR << std::endl;
-			std::cout << "R-G    " << centerR - centerG << std::endl;
+			// std::cout << "R-G    " << centerR - centerG << std::endl;
 		}
 		//show frames
 		//imshow(windowName2,threshold);
@@ -428,7 +460,7 @@ int main(int argc, char* argv[])
 
 		//delay 30ms so that screen can refresh.
 		//image will not appear without this waitKey() command
-		waitKey(1000);
+		waitKey(100);
 	}
 	return 0;
 }
