@@ -42,7 +42,7 @@ const string windowName1 = "HSV Image";
 const string windowName2 = "Thresholded Image";
 const string windowName3 = "After Morphological Operations";
 const string trackbarWindowName = "Trackbars";
-
+int idx;
 //The following for canny edge detec
 Mat dst, detected_edges;
 Mat src, src_gray;
@@ -54,7 +54,7 @@ int kernel_size = 3;
 const char* window_name = "Edge Map";
 
 Point cameraCenter;
-
+Point roiCenter;
 int roi_width, roi_height;
 
 void on_trackbar(int, void*)
@@ -235,7 +235,7 @@ Point trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraF
 					minEnclosingCircle(contours_poly[i], centers[i], radius[i]);
 					if (float(contourArea(contours[i])) >= float(0.8) * radius[i] * radius[i] * float(3.14)) {
 						// centers[i]가 중심점을 어떻게 잡고 있는지 체크해야함.
-						std::cout << "x좌표: " << centers[i].x << "          y좌표: " << centers[i].y << std::endl;
+						// std::cout << "x좌표: " << centers[i].x << "          y좌표: " << centers[i].y << std::endl;
 						
 						balls.push_back(contours[i]);
 						/*
@@ -336,15 +336,66 @@ Point trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraF
 	return result;
 }
 
-String roiDetector(Point center) {
+String roiDetector(Point centerB, Point centerG, Point centerR ) {
+
+	Point center;
+	if (idx == 0) {
+		center = centerG;
+	}
+	else if (idx == 1) {
+		center = centerB;
+	}
+	else if (idx == 2) {
+		center = centerR;
+	}
+	else if (idx == 4) {
+		center = centerR;
+	}
 	if ((center.x - (cameraCenter.x - roi_width / 2)) < 0) {
-		return "왼쪽으로 가세요.";
+		if ((center.y - (cameraCenter.y - roi_height / 2)) < 0) {
+			return "왼쪽 위로 가세요.";
+		}
+		else if ((center.y - (cameraCenter.y + roi_height / 2)) > 0) {
+			return "왼쪽 아래로 가세요.";
+		}
+		else {
+			return "왼쪽으로 가세요.";
+		}
+
 	}
 	else if ((center.x - (cameraCenter.x + roi_width / 2)) > 0) {
-		return "오른쪽으로 가세요.";
+		if ((center.y - (cameraCenter.y - roi_height / 2)) < 0) {
+			return "오른쪽 위로 가세요.";
+		}
+		else if ((center.y - (cameraCenter.y + roi_height / 2)) > 0) {
+			return "오른쪽 아래로 가세요.";
+		}
+		else {
+			return "오른쪽으로 가세요.";
+		}
 	}
+
 	else {
-		return "정상 범주안에 있습니다.";
+		if ((center.y - (cameraCenter.y - roi_height / 2)) < 0) {
+			return "위쪽으로 가세요.";
+		}
+		else if ((center.y - (cameraCenter.y + roi_height / 2)) > 0) {
+			return "아래쪽으로 가세요.";
+		}
+		else {
+			if (idx == 0) {
+				idx = 1;
+			}
+			else if (idx == 1) {
+				idx = 2;
+			}
+			else if (idx == 2) {
+				idx = 0;
+			}
+			else if (idx == 4) {
+				idx = 0;
+			}
+		}
 	}
 	
 }
@@ -352,10 +403,11 @@ int main(int argc, char* argv[])
 {
 	cameraCenter.x = 320;
 	cameraCenter.y = 240;
-	
+	idx = 4;
 	roi_width = 120;
 	roi_height = 120;
-
+	roiCenter.x = 320;
+	roiCenter.y = 240;
 	//if we would like to calibrate our filter values, set to true.
 	bool calibrationMode = false;
 
@@ -371,7 +423,7 @@ int main(int argc, char* argv[])
 	//video capture object to acquire webcam feed
 	VideoCapture capture;
 	//open capture object at location zero (default location for webcam)
-	capture.open(0);
+	capture.open(1);
 	//set height and width of capture frame
 	capture.set(CV_CAP_PROP_FRAME_WIDTH, FRAME_WIDTH);
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT);
@@ -419,7 +471,7 @@ int main(int argc, char* argv[])
 			//create some temp fruit objects so that
 			//we can use their member functions/information
 			Object blue("blue"), yellow("yellow"), red("red"), green("green");
-
+			
 			Point centerR, centerB, centerG, centerY;
 			//first find blue objects
 			cvtColor(cameraFeed, HSV, COLOR_BGR2HSV);
@@ -446,15 +498,15 @@ int main(int argc, char* argv[])
 			morphOps(threshold);
 			centerG = trackFilteredObject(green, threshold, HSV, cameraFeed);
 
-			std::cout << roiDetector((centerB + centerG)/2) << std::endl;
-
+			std::cout << roiDetector(centerB, centerG, centerR) << std::endl;
+			std::cout << "idx: " << idx << std::endl;
 			//std::cout << "Blue" << "          " << "Green" << "          " << "Red" << std::endl;
 			//std::cout << centerB << "     " << centerG << "     " << centerR << std::endl;
 			// std::cout << "R-G    " << centerR - centerG << std::endl;
 		}
 		//show frames
 		//imshow(windowName2,threshold);
-
+		cv::rectangle(cameraFeed, Point(260, 180), Point(380, 300), Scalar(0, 255, 255), 1, 8);
 		imshow(windowName, cameraFeed);
 		//imshow(windowName1,HSV);
 
