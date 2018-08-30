@@ -16,7 +16,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
-
+#include <math.h>
 #include "Object.h"
 
 
@@ -317,8 +317,9 @@ Point trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraF
 					objects.push_back(object);
 
 					objectFound = true;
-
 				}
+
+
 				else objectFound = false;
 			}
 			//let user know you found an object
@@ -332,6 +333,27 @@ Point trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraF
 		}
 		else putText(cameraFeed, "TOO MUCH NOISE! ADJUST FILTER", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
 	}
+	float dist = 0;
+	float dist_m = 0;
+	int id = 0;
+	if (objects.size() != 0) {
+		for (int i = 0; i < objects.size(); i++) {
+			std::cout << cvRound(objects[i].getXPos()) - 320 << std::endl;
+
+			dist = abs(float (cvRound(objects[i].getXPos()) - 320)) + abs(float (cvRound(objects[i].getYPos()) - 240));
+			if (dist_m > dist) {
+				std::cout << "Debug1" << std::endl;
+				dist_m = dist;
+				id = i;
+				std::cout << dist_m << std::endl;
+				std::cout << id << std::endl;
+			}
+		}
+		std::cout << "Debug2" << std::endl;
+
+		result.x = objects[id].getXPos();
+		result.y = objects[id].getYPos();
+	}
 
 	return result;
 }
@@ -339,6 +361,7 @@ Point trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraF
 String roiDetector(Point centerB, Point centerG, Point centerR ) {
 
 	Point center;
+
 	if (idx == 0) {
 		center = centerG;
 	}
@@ -351,54 +374,58 @@ String roiDetector(Point centerB, Point centerG, Point centerR ) {
 	else if (idx == 4) {
 		center = centerR;
 	}
-	if ((center.x - (cameraCenter.x - roi_width / 2)) < 0) {
-		if ((center.y - (cameraCenter.y - roi_height / 2)) < 0) {
-			return "왼쪽 위로 가세요.";
-		}
-		else if ((center.y - (cameraCenter.y + roi_height / 2)) > 0) {
-			return "왼쪽 아래로 가세요.";
-		}
-		else {
-			return "왼쪽으로 가세요.";
-		}
-
+	if (center.x == 0 && center.y == 0) {
+		return "원 물체 없음.";
 	}
-	else if ((center.x - (cameraCenter.x + roi_width / 2)) > 0) {
-		if ((center.y - (cameraCenter.y - roi_height / 2)) < 0) {
-			return "오른쪽 위로 가세요.";
-		}
-		else if ((center.y - (cameraCenter.y + roi_height / 2)) > 0) {
-			return "오른쪽 아래로 가세요.";
-		}
-		else {
-			return "오른쪽으로 가세요.";
-		}
-	}
-
 	else {
-		if ((center.y - (cameraCenter.y - roi_height / 2)) < 0) {
-			return "위쪽으로 가세요.";
+		if ((center.x - (cameraCenter.x - roi_width / 2)) < 0) {
+			if ((center.y - (cameraCenter.y - roi_height / 2)) < 0) {
+				return "왼쪽 위로 가세요.";
+			}
+			else if ((center.y - (cameraCenter.y + roi_height / 2)) > 0) {
+				return "왼쪽 아래로 가세요.";
+			}
+			else {
+				return "왼쪽으로 가세요.";
+			}
+
 		}
-		else if ((center.y - (cameraCenter.y + roi_height / 2)) > 0) {
-			return "아래쪽으로 가세요.";
+		else if ((center.x - (cameraCenter.x + roi_width / 2)) > 0) {
+			if ((center.y - (cameraCenter.y - roi_height / 2)) < 0) {
+				return "오른쪽 위로 가세요.";
+			}
+			else if ((center.y - (cameraCenter.y + roi_height / 2)) > 0) {
+				return "오른쪽 아래로 가세요.";
+			}
+			else {
+				return "오른쪽으로 가세요.";
+			}
 		}
+
 		else {
-			if (idx == 0) {
-				idx = 1;
+			if ((center.y - (cameraCenter.y - roi_height / 2)) < 0) {
+				return "위쪽으로 가세요.";
 			}
-			else if (idx == 1) {
-				idx = 2;
+			else if ((center.y - (cameraCenter.y + roi_height / 2)) > 0) {
+				return "아래쪽으로 가세요.";
 			}
-			else if (idx == 2) {
-				idx = 0;
+			else {
+				if (idx == 0) {
+					idx = 1;
+				}
+				else if (idx == 1) {
+					idx = 2;
+				}
+				else if (idx == 2) {
+					idx = 0;
+				}
+				else if (idx == 4) {
+					idx = 0;
+				}
+				return "정상범주!";
 			}
-			else if (idx == 4) {
-				idx = 0;	
-			}
-			return "정상범주!";
 		}
 	}
-	
 }
 int main(int argc, char* argv[])
 {
@@ -502,6 +529,7 @@ int main(int argc, char* argv[])
 
 			std::cout << roiDetector(centerB, centerG, centerR) << std::endl;
 			std::cout << "idx: " << idx << std::endl;
+			std::cout << centerR << endl;
 			//std::cout << "Blue" << "          " << "Green" << "          " << "Red" << std::endl;
 			//std::cout << centerB << "     " << centerG << "     " << centerR << std::endl;
 			// std::cout << "R-G    " << centerR - centerG << std::endl;
