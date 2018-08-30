@@ -334,22 +334,20 @@ Point trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraF
 		else putText(cameraFeed, "TOO MUCH NOISE! ADJUST FILTER", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
 	}
 	float dist = 0;
-	float dist_m = 0;
+	float dist_m = 2000;
 	int id = 0;
 	if (objects.size() != 0) {
 		for (int i = 0; i < objects.size(); i++) {
 			std::cout << cvRound(objects[i].getXPos()) - 320 << std::endl;
 
-			dist = abs(float (cvRound(objects[i].getXPos()) - 320)) + abs(float (cvRound(objects[i].getYPos()) - 240));
+			dist = abs(cvRound(objects[i].getXPos() - cameraCenter.x)) + abs( cvRound(objects[i].getYPos() - cameraCenter.y));
 			if (dist_m > dist) {
-				std::cout << "Debug1" << std::endl;
 				dist_m = dist;
 				id = i;
-				std::cout << dist_m << std::endl;
-				std::cout << id << std::endl;
+				std::cout << "dist_m: " << dist_m << std::endl;
+				std::cout << "id: " << id << std::endl;
 			}
 		}
-		std::cout << "Debug2" << std::endl;
 
 		result.x = objects[id].getXPos();
 		result.y = objects[id].getYPos();
