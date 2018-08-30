@@ -393,8 +393,9 @@ String roiDetector(Point centerB, Point centerG, Point centerR ) {
 				idx = 0;
 			}
 			else if (idx == 4) {
-				idx = 0;
+				idx = 0;	
 			}
+			return "정상범주!";
 		}
 	}
 	
@@ -403,6 +404,7 @@ int main(int argc, char* argv[])
 {
 	cameraCenter.x = 320;
 	cameraCenter.y = 240;
+
 	idx = 4;
 	roi_width = 120;
 	roi_height = 120;
