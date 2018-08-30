@@ -123,9 +123,10 @@ void morphOps(Mat &thresh) {
 	Mat dilateElement = getStructuringElement(MORPH_RECT, Size(8, 8));
 
 	erode(thresh, thresh, erodeElement);
+	dilate(thresh, thresh, dilateElement);
+
 	erode(thresh, thresh, erodeElement);
 
-	dilate(thresh, thresh, dilateElement);
 	dilate(thresh, thresh, dilateElement);
 }
 void trackFilteredObject(Mat threshold, Mat HSV, Mat &cameraFeed)
@@ -192,7 +193,6 @@ void trackFilteredObject(Mat threshold, Mat HSV, Mat &cameraFeed)
 }
 
 Point trackFilteredObject(Object theObject, Mat threshold, Mat HSV, Mat &cameraFeed) {
-
 	Point result;
 	vector <Object> objects;
 	Mat temp;
