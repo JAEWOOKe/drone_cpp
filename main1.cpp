@@ -361,15 +361,19 @@ String roiDetector(Point centerB, Point centerG, Point centerR ) {
 	Point center;
 
 	if (idx == 0) {
+		std::cout << "초록색으로 가세요." << std::endl;
 		center = centerG;
 	}
 	else if (idx == 1) {
+		std::cout << "파란색으로 가세요." << std::endl;
 		center = centerB;
 	}
 	else if (idx == 2) {
+		std::cout << "빨간색으로 가세요." << std::endl;
 		center = centerR;
 	}
 	else if (idx == 4) {
+		std::cout << "빨간색으로 가세요." << std::endl;
 		center = centerR;
 	}
 	if (center.x == 0 && center.y == 0) {
@@ -526,8 +530,7 @@ int main(int argc, char* argv[])
 			centerG = trackFilteredObject(green, threshold, HSV, cameraFeed);
 
 			std::cout << roiDetector(centerB, centerG, centerR) << std::endl;
-			std::cout << "idx: " << idx << std::endl;
-			std::cout << centerR << endl;
+			std::cout << std::endl;
 			//std::cout << "Blue" << "          " << "Green" << "          " << "Red" << std::endl;
 			//std::cout << centerB << "     " << centerG << "     " << centerR << std::endl;
 			// std::cout << "R-G    " << centerR - centerG << std::endl;
